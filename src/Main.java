@@ -2,450 +2,440 @@ package taller;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
+/**
+ * MAIN (Interfaz gráfica)
+ * - Aquí se ejecuta todo el programa.
+ * - Aquí empieza cada opción del menú (botones).
+ * - Aquí se valida cédula / números negativos.
+ */
 public class Main {
 
-    private final TallerServicio servicio = new TallerServicio();
-
-    private JFrame frame;
-    private JTextArea area;
+    // ============================
+    // AQUÍ SE GUARDAN MECÁNICOS EN MEMORIA (simple)
+    // ============================
+    private static final Map<String, Mecanico> MECANICOS = new LinkedHashMap<>();
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new Main().iniciar());
-    }
+        // ============================
+        // AQUÍ INICIA EL PROGRAMA (main)
+        // ============================
+        SwingUtilities.invokeLater(() -> {
+            // AQUÍ SE CREA EL "SERVICIO" (lógica / datos en memoria)
+            TallerServicio service = new TallerServicio();
 
-    private void iniciar() {
-        frame = new JFrame("Taller de Bicicletas - Sistema");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(980, 640);
-        frame.setLocationRelativeTo(null);
+            // ============================
+            // AQUÍ SE CREA LA VENTANA PRINCIPAL
+            // ============================
+            JFrame frame = new JFrame("DCS - Taller (Proyecto)");
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.setSize(980, 620);
+            frame.setLocationRelativeTo(null);
+            frame.setLayout(new BorderLayout());
 
-        area = new JTextArea();
-        area.setEditable(false);
-        area.setFont(new Font("Consolas", Font.PLAIN, 13));
-        JScrollPane scroll = new JScrollPane(area);
+            // ============================
+            // AQUÍ SE PONE EL ICONO DE LA VENTANA (esquina superior)
+            // ============================
+            try {
+                ImageIcon icon = new ImageIcon(Main.class.getResource("/DCS LOGO.png"));
+                frame.setIconImage(icon.getImage());
+            } catch (Exception ignored) {}
 
-        JPanel panelBotones = new JPanel(new GridLayout(3, 5, 8, 8));
-        panelBotones.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+            // Contenedor raíz
+            JPanel root = new JPanel(new BorderLayout());
+            frame.setContentPane(root);
 
-        // CLIENTE
-        JButton bCrearCliente = new JButton("Crear Cliente");
-        JButton bUpdCliente = new JButton("Editar Cliente");
-        JButton bDelCliente = new JButton("Eliminar Cliente");
+            // ============================
+            // AQUÍ VA EL HEADER CON EL LOGO (ARRIBA, PEQUEÑO)
+            // ============================
+            JPanel panelTop = new JPanel(new BorderLayout());
+            panelTop.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+            panelTop.setPreferredSize(new Dimension(10, 130));
 
-        // BICI
-        JButton bCrearBici = new JButton("Crear Bicicleta");
-        JButton bUpdBici = new JButton("Editar Bicicleta");
-        JButton bDelBici = new JButton("Eliminar Bicicleta");
+            JLabel lblLogo = new JLabel();
+            lblLogo.setHorizontalAlignment(SwingConstants.CENTER);
 
-        // REPUESTO
-        JButton bCrearRep = new JButton("Crear Repuesto");
-        JButton bUpdRep = new JButton("Editar Repuesto");
-        JButton bDelRep = new JButton("Eliminar Repuesto");
+            try {
+                ImageIcon original = new ImageIcon(Main.class.getResource("/DCS LOGO.png"));
 
-        // ORDEN / SEGUIMIENTO
-        JButton bCrearOrden = new JButton("Crear Orden");
-        JButton bAddRepOrden = new JButton("+ Repuesto a Orden");
-        JButton bDelRepOrden = new JButton("- Repuesto de Orden");
-        JButton bModCant = new JButton("Modificar Cantidad");
-        JButton bSeguimiento = new JButton("Seguimiento/Estado");
-        JButton bCerrarOrden = new JButton("Cerrar Orden");
+                // AQUÍ SE EJECUTA EL ESCALADO DEL LOGO
+                int altoDeseado = 90; // ajusta si quieres (70/80/100)
+                int anchoDeseado = (original.getIconWidth() * altoDeseado) / original.getIconHeight();
 
-        // REPORTES
-        JButton bReporteOrden = new JButton("Reporte Orden");
-        JButton bListarTodo = new JButton("Listar Todo");
-        JButton bLimpiar = new JButton("Limpiar Log");
-
-        // Layout botones (15)
-        panelBotones.add(bCrearCliente);
-        panelBotones.add(bUpdCliente);
-        panelBotones.add(bDelCliente);
-        panelBotones.add(bCrearBici);
-        panelBotones.add(bUpdBici);
-
-        panelBotones.add(bDelBici);
-        panelBotones.add(bCrearRep);
-        panelBotones.add(bUpdRep);
-        panelBotones.add(bDelRep);
-        panelBotones.add(bCrearOrden);
-
-        panelBotones.add(bAddRepOrden);
-        panelBotones.add(bDelRepOrden);
-        panelBotones.add(bModCant);
-        panelBotones.add(bSeguimiento);
-        panelBotones.add(bCerrarOrden);
-
-        // Abajo: reportes
-        JPanel panelAbajo = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 8));
-        panelAbajo.add(bReporteOrden);
-        panelAbajo.add(bListarTodo);
-        panelAbajo.add(bLimpiar);
-
-        // Acciones
-        bCrearCliente.addActionListener(e -> crearClienteGUI());
-        bUpdCliente.addActionListener(e -> editarClienteGUI());
-        bDelCliente.addActionListener(e -> eliminarClienteGUI());
-
-        bCrearBici.addActionListener(e -> crearBicicletaGUI());
-        bUpdBici.addActionListener(e -> editarBicicletaGUI());
-        bDelBici.addActionListener(e -> eliminarBicicletaGUI());
-
-        bCrearRep.addActionListener(e -> crearRepuestoGUI());
-        bUpdRep.addActionListener(e -> editarRepuestoGUI());
-        bDelRep.addActionListener(e -> eliminarRepuestoGUI());
-
-        bCrearOrden.addActionListener(e -> crearOrdenGUI());
-        bAddRepOrden.addActionListener(e -> agregarRepuestoOrdenGUI());
-        bDelRepOrden.addActionListener(e -> eliminarRepuestoOrdenGUI());
-        bModCant.addActionListener(e -> modificarCantidadOrdenGUI());
-        bSeguimiento.addActionListener(e -> seguimientoOrdenGUI());
-        bCerrarOrden.addActionListener(e -> cerrarOrdenGUI());
-
-        bReporteOrden.addActionListener(e -> reporteOrdenGUI());
-        bListarTodo.addActionListener(e -> log(ReporteServicio.listadoGeneral(servicio)));
-        bLimpiar.addActionListener(e -> area.setText(""));
-
-        frame.setLayout(new BorderLayout());
-        frame.add(panelBotones, BorderLayout.NORTH);
-        frame.add(scroll, BorderLayout.CENTER);
-        frame.add(panelAbajo, BorderLayout.SOUTH);
-
-        log("=== Sistema iniciado ===");
-        frame.setVisible(true);
-    }
-
-    // -----------------------------
-    // Helpers entrada / salida
-    // -----------------------------
-    private void log(String msg) {
-        area.append(msg + "\n");
-    }
-
-    private String pedirTexto(String label) {
-        String x = JOptionPane.showInputDialog(frame, label);
-        if (x == null) return null;
-        x = x.trim();
-        if (x.isEmpty()) {
-            JOptionPane.showMessageDialog(frame, "No puede estar vacío.");
-            return null;
-        }
-        return x;
-    }
-
-    private Integer pedirEnteroPositivo(String label) {
-        String x = JOptionPane.showInputDialog(frame, label);
-        if (x == null) return null;
-        try {
-            int v = Integer.parseInt(x.trim());
-            if (v <= 0) throw new NumberFormatException();
-            return v;
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(frame, "Ingrese un número entero positivo.");
-            return null;
-        }
-    }
-
-    private Double pedirDoubleNoNegativo(String label) {
-        String x = JOptionPane.showInputDialog(frame, label);
-        if (x == null) return null;
-        try {
-            double v = Double.parseDouble(x.trim());
-            if (v < 0) throw new NumberFormatException();
-            return v;
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(frame, "Ingrese un número válido (no negativo).");
-            return null;
-        }
-    }
-
-    // -----------------------------
-    // CLIENTE CRUD
-    // -----------------------------
-    private void crearClienteGUI() {
-        try {
-            String nombre = pedirTexto("Nombre del cliente:");
-            if (nombre == null) return;
-            String tel = pedirTexto("Teléfono:");
-            if (tel == null) return;
-
-            Cliente c = servicio.crearCliente(nombre, tel);
-            log("[OK] Cliente creado: " + c);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(frame, "Error: " + ex.getMessage());
-        }
-    }
-
-    private void editarClienteGUI() {
-        try {
-            Integer id = pedirEnteroPositivo("ID Cliente a editar:");
-            if (id == null) return;
-
-            String nombre = JOptionPane.showInputDialog(frame, "Nuevo nombre (ENTER para mantener):");
-            String tel = JOptionPane.showInputDialog(frame, "Nuevo teléfono (ENTER para mantener):");
-
-            Cliente c = servicio.actualizarCliente(id, nombre, tel);
-            log("[OK] Cliente actualizado: " + c);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(frame, "Error: " + ex.getMessage());
-        }
-    }
-
-    private void eliminarClienteGUI() {
-        try {
-            Integer id = pedirEnteroPositivo("ID Cliente a eliminar:");
-            if (id == null) return;
-
-            servicio.eliminarCliente(id);
-            log("[OK] Cliente eliminado: ID " + id);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(frame, "Error: " + ex.getMessage());
-        }
-    }
-
-    // -----------------------------
-    // BICICLETA CRUD
-    // -----------------------------
-    private void crearBicicletaGUI() {
-        try {
-            Integer idCli = pedirEnteroPositivo("ID del cliente (debe existir):");
-            if (idCli == null) return;
-
-            String marca = pedirTexto("Marca de la bicicleta:");
-            if (marca == null) return;
-
-            String modelo = pedirTexto("Modelo de la bicicleta:");
-            if (modelo == null) return;
-
-            Bicicleta b = servicio.crearBicicleta(idCli, marca, modelo);
-            log("[OK] Bicicleta creada: " + b);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(frame, "Error: " + ex.getMessage());
-        }
-    }
-
-    private void editarBicicletaGUI() {
-        try {
-            Integer idBici = pedirEnteroPositivo("ID Bicicleta a editar:");
-            if (idBici == null) return;
-
-            String sNuevoIdCli = JOptionPane.showInputDialog(frame, "Nuevo ID Cliente (vacío para mantener):");
-            Integer nuevoIdCli = null;
-            if (sNuevoIdCli != null && !sNuevoIdCli.trim().isEmpty()) {
-                nuevoIdCli = Integer.parseInt(sNuevoIdCli.trim());
-                if (nuevoIdCli <= 0) throw new IllegalArgumentException("ID Cliente inválido.");
+                Image imgEscalada = original.getImage().getScaledInstance(anchoDeseado, altoDeseado, Image.SCALE_SMOOTH);
+                lblLogo.setIcon(new ImageIcon(imgEscalada));
+            } catch (Exception ex) {
+                lblLogo.setText("LOGO NO CARGADO (revisa Resources Root / nombre del archivo)");
             }
 
-            String marca = JOptionPane.showInputDialog(frame, "Nueva marca (vacío para mantener):");
-            String modelo = JOptionPane.showInputDialog(frame, "Nuevo modelo (vacío para mantener):");
+            panelTop.add(lblLogo, BorderLayout.CENTER);
+            root.add(panelTop, BorderLayout.NORTH);
 
-            Bicicleta b = servicio.actualizarBicicleta(idBici, nuevoIdCli, marca, modelo);
-            log("[OK] Bicicleta actualizada: " + b);
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(frame, "Error: ID Cliente inválido.");
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(frame, "Error: " + ex.getMessage());
-        }
+            // ============================
+            // CUERPO: MENÚ + ÁREA DE SALIDA
+            // ============================
+            JPanel panelCentro = new JPanel(new BorderLayout());
+            panelCentro.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+            root.add(panelCentro, BorderLayout.CENTER);
+
+            JTextArea salida = new JTextArea();
+            salida.setEditable(false);
+            salida.setFont(new Font("Consolas", Font.PLAIN, 13));
+            panelCentro.add(new JScrollPane(salida), BorderLayout.CENTER);
+
+            JPanel panelMenu = new JPanel(new GridLayout(0, 1, 8, 8));
+            panelMenu.setPreferredSize(new Dimension(300, 10));
+            panelCentro.add(panelMenu, BorderLayout.WEST);
+
+            // Texto inicial
+            salida.append("Sistema DCS - Taller iniciado.\n");
+            salida.append("Logo cargado desde /DCS LOGO.png (resources).\n\n");
+
+            // ==========================================================
+            // AQUÍ EMPIEZAN LAS OPCIONES DEL MENÚ (BOTONES)
+            // ==========================================================
+
+            // ===== 1) Crear Cliente =====
+            JButton btnCrearCliente = new JButton("1) Crear Cliente");
+            btnCrearCliente.addActionListener(e -> {
+                // AQUÍ SE EJECUTA LA OPCIÓN: CREAR CLIENTE
+                try {
+                    String cedula = pedirCedulaValida(frame, "Cédula del cliente (10 dígitos):");
+                    if (cedula == null) return;
+
+                    String nombre = pedirTextoNoVacio(frame, "Nombre del cliente:");
+                    if (nombre == null) return;
+
+                    String telefono = pedirTextoNoVacio(frame, "Teléfono del cliente:");
+                    if (telefono == null) return;
+
+                    Cliente c = service.crearCliente(cedula, nombre, telefono);
+                    salida.append("Cliente creado: " + c + "\n");
+
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(frame, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            });
+            panelMenu.add(btnCrearCliente);
+
+            // ===== 2) Listar Clientes =====
+            JButton btnListarClientes = new JButton("2) Listar Clientes");
+            btnListarClientes.addActionListener(e -> {
+                // AQUÍ SE EJECUTA LA OPCIÓN: LISTAR CLIENTES
+                salida.append("\n--- CLIENTES ---\n");
+                for (Cliente c : service.clientes()) {
+                    salida.append(c + "\n");
+                }
+            });
+            panelMenu.add(btnListarClientes);
+
+            // ===== 3) Crear Bicicleta =====
+            JButton btnCrearBici = new JButton("3) Crear Bicicleta");
+            btnCrearBici.addActionListener(e -> {
+                // AQUÍ SE EJECUTA LA OPCIÓN: CREAR BICICLETA
+                try {
+                    String cedulaCliente = pedirCedulaValida(frame, "Cédula del cliente dueño:");
+                    if (cedulaCliente == null) return;
+
+                    String marca = pedirTextoNoVacio(frame, "Marca:");
+                    if (marca == null) return;
+
+                    String modelo = pedirTextoNoVacio(frame, "Modelo:");
+                    if (modelo == null) return;
+
+                    Bicicleta b = service.crearBicicleta(cedulaCliente, marca, modelo);
+                    salida.append("Bicicleta creada: " + b + "\n");
+
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(frame, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            });
+            panelMenu.add(btnCrearBici);
+
+            // ===== 4) Crear Repuesto =====
+            JButton btnCrearRepuesto = new JButton("4) Crear Repuesto");
+            btnCrearRepuesto.addActionListener(e -> {
+                // AQUÍ SE EJECUTA LA OPCIÓN: CREAR REPUESTO
+                try {
+                    String nombre = pedirTextoNoVacio(frame, "Nombre del repuesto:");
+                    if (nombre == null) return;
+
+                    double precio = pedirDoubleNoNeg(frame, "Precio ($):");
+                    if (Double.isNaN(precio)) return;
+
+                    int stock = pedirIntNoNeg(frame, "Stock (0 o más):");
+                    if (stock == Integer.MIN_VALUE) return;
+
+                    Repuesto r = service.crearRepuesto(nombre, precio, stock);
+                    salida.append("Repuesto creado: " + r + "\n");
+
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(frame, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            });
+            panelMenu.add(btnCrearRepuesto);
+
+            // ===== 5) Crear Orden =====
+            JButton btnCrearOrden = new JButton("5) Crear Orden");
+            btnCrearOrden.addActionListener(e -> {
+                // AQUÍ SE EJECUTA LA OPCIÓN: CREAR ORDEN
+                try {
+                    String cedulaCliente = pedirCedulaValida(frame, "Cédula del cliente:");
+                    if (cedulaCliente == null) return;
+
+                    int idBici = pedirIntPositivo(frame, "ID bicicleta (ej: 1, 2, 3...):");
+                    if (idBici == Integer.MIN_VALUE) return;
+
+                    String desc = pedirTextoNoVacio(frame, "Descripción del servicio:");
+                    if (desc == null) return;
+
+                    double mano = pedirDoubleNoNeg(frame, "Mano de obra ($):");
+                    if (Double.isNaN(mano)) return;
+
+                    OrdenServicio o = service.crearOrden(cedulaCliente, idBici, desc, mano);
+                    salida.append("Orden creada: " + o + "\n");
+
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(frame, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            });
+            panelMenu.add(btnCrearOrden);
+
+            // ===== 6) Listar Órdenes =====
+            JButton btnListarOrdenes = new JButton("6) Listar Órdenes");
+            btnListarOrdenes.addActionListener(e -> {
+                // AQUÍ SE EJECUTA LA OPCIÓN: LISTAR ÓRDENES
+                salida.append("\n--- ÓRDENES ---\n");
+                for (OrdenServicio o : service.ordenes()) {
+                    salida.append(o + "\n");
+                }
+            });
+            panelMenu.add(btnListarOrdenes);
+
+            // ===== 7) Cambiar Estado de Orden =====
+            JButton btnCambiarEstado = new JButton("7) Cambiar Estado Orden");
+            btnCambiarEstado.addActionListener(e -> {
+                // AQUÍ SE EJECUTA LA OPCIÓN: CAMBIAR ESTADO ORDEN
+                try {
+                    int idOrden = pedirIntPositivo(frame, "ID de la orden:");
+                    if (idOrden == Integer.MIN_VALUE) return;
+
+                    EstadoOrden estado = (EstadoOrden) JOptionPane.showInputDialog(
+                            frame,
+                            "Selecciona el nuevo estado:",
+                            "Estado de Orden",
+                            JOptionPane.QUESTION_MESSAGE,
+                            null,
+                            EstadoOrden.values(),
+                            EstadoOrden.ABIERTA
+                    );
+                    if (estado == null) return;
+
+                    service.cambiarEstadoOrden(idOrden, estado);
+                    salida.append("Estado cambiado: Orden #" + idOrden + " -> " + estado + "\n");
+
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(frame, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            });
+            panelMenu.add(btnCambiarEstado);
+
+            // ===== 8) Cerrar Orden =====
+            JButton btnCerrarOrden = new JButton("8) Cerrar Orden");
+            btnCerrarOrden.addActionListener(e -> {
+                // AQUÍ SE EJECUTA LA OPCIÓN: CERRAR ORDEN
+                try {
+                    int idOrden = pedirIntPositivo(frame, "ID de la orden a cerrar:");
+                    if (idOrden == Integer.MIN_VALUE) return;
+
+                    service.cerrarOrden(idOrden);
+                    salida.append("Orden cerrada: #" + idOrden + "\n");
+
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(frame, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            });
+            panelMenu.add(btnCerrarOrden);
+
+            // ===== 9) Crear Mecánico =====
+            JButton btnCrearMecanico = new JButton("9) Crear Mecánico");
+            btnCrearMecanico.addActionListener(e -> {
+                // AQUÍ SE EJECUTA LA OPCIÓN: CREAR MECÁNICO
+                String cedula = pedirCedulaValida(frame, "Cédula del mecánico (10 dígitos):");
+                if (cedula == null) return;
+
+                String nombre = pedirTextoNoVacio(frame, "Nombre del mecánico:");
+                if (nombre == null) return;
+
+                if (MECANICOS.containsKey(cedula)) {
+                    JOptionPane.showMessageDialog(frame, "Ya existe un mecánico con esa cédula.", "Aviso",
+                            JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+
+                Mecanico m = new Mecanico(cedula, nombre);
+                MECANICOS.put(cedula, m);
+
+                salida.append("Mecánico creado: " + m + "\n");
+            });
+            panelMenu.add(btnCrearMecanico);
+
+            // ===== 10) Asignar Mecánico a una Orden =====
+            JButton btnAsignarMecanicoOrden = new JButton("10) Asignar Mecánico a Orden");
+            btnAsignarMecanicoOrden.addActionListener(e -> {
+                // AQUÍ SE EJECUTA LA OPCIÓN: ASIGNAR MECÁNICO A ORDEN
+                try {
+                    if (MECANICOS.isEmpty()) {
+                        JOptionPane.showMessageDialog(frame, "Primero crea un mecánico.", "Aviso",
+                                JOptionPane.INFORMATION_MESSAGE);
+                        return;
+                    }
+
+                    int idOrden = pedirIntPositivo(frame, "ID de la orden:");
+                    if (idOrden == Integer.MIN_VALUE) return;
+
+                    Object[] opciones = MECANICOS.values().toArray();
+                    Mecanico elegido = (Mecanico) JOptionPane.showInputDialog(
+                            frame,
+                            "Selecciona el mecánico:",
+                            "Asignar Mecánico",
+                            JOptionPane.QUESTION_MESSAGE,
+                            null,
+                            opciones,
+                            opciones[0]
+                    );
+                    if (elegido == null) return;
+
+                    // Si tienes método real en TallerServicio, úsalo.
+                    // Si no, lo registramos como seguimiento:
+                    service.agregarNotaSeguimiento(idOrden,
+                            "Mecánico asignado: " + elegido.getNombre() + " | CI: " + elegido.getCedula());
+
+                    salida.append("Orden #" + idOrden + " -> Mecánico asignado: " + elegido.getNombre() + "\n");
+
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(frame, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            });
+            panelMenu.add(btnAsignarMecanicoOrden);
+
+            // ===== Salir =====
+            JButton btnSalir = new JButton("Salir");
+            btnSalir.addActionListener(e -> {
+                // AQUÍ SE EJECUTA LA OPCIÓN: SALIR
+                frame.dispose();
+            });
+            panelMenu.add(btnSalir);
+
+            // Mostrar ventana
+            frame.setVisible(true);
+        });
     }
 
-    private void eliminarBicicletaGUI() {
-        try {
-            Integer id = pedirEnteroPositivo("ID Bicicleta a eliminar:");
-            if (id == null) return;
+    // ==========================================================
+    // AQUÍ EMPIEZAN LAS FUNCIONES DE VALIDACIÓN (helpers)
+    // ==========================================================
 
-            servicio.eliminarBicicleta(id);
-            log("[OK] Bicicleta eliminada: ID " + id);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(frame, "Error: " + ex.getMessage());
-        }
-    }
+    private static String pedirCedulaValida(Component parent, String mensaje) {
+        while (true) {
+            String input = JOptionPane.showInputDialog(parent, mensaje);
+            if (input == null) return null;
 
-    // -----------------------------
-    // REPUESTO CRUD
-    // -----------------------------
-    private void crearRepuestoGUI() {
-        try {
-            String nombre = pedirTexto("Nombre del repuesto:");
-            if (nombre == null) return;
-
-            Double precio = pedirDoubleNoNegativo("Precio:");
-            if (precio == null) return;
-
-            Integer stock = pedirEnteroPositivo("Stock inicial:");
-            if (stock == null) return;
-
-            Repuesto r = servicio.crearRepuesto(nombre, precio, stock);
-            log("[OK] Repuesto creado: " + r);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(frame, "Error: " + ex.getMessage());
-        }
-    }
-
-    private void editarRepuestoGUI() {
-        try {
-            Integer id = pedirEnteroPositivo("ID Repuesto a editar:");
-            if (id == null) return;
-
-            String nombre = JOptionPane.showInputDialog(frame, "Nuevo nombre (vacío para mantener):");
-
-            String sPrecio = JOptionPane.showInputDialog(frame, "Nuevo precio (vacío para mantener):");
-            Double precio = null;
-            if (sPrecio != null && !sPrecio.trim().isEmpty()) precio = Double.parseDouble(sPrecio.trim());
-
-            String sStock = JOptionPane.showInputDialog(frame, "Nuevo stock (vacío para mantener):");
-            Integer stock = null;
-            if (sStock != null && !sStock.trim().isEmpty()) stock = Integer.parseInt(sStock.trim());
-
-            Repuesto r = servicio.actualizarRepuesto(id, nombre, precio, stock);
-            log("[OK] Repuesto actualizado: " + r);
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(frame, "Error: número inválido.");
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(frame, "Error: " + ex.getMessage());
-        }
-    }
-
-    private void eliminarRepuestoGUI() {
-        try {
-            Integer id = pedirEnteroPositivo("ID Repuesto a eliminar:");
-            if (id == null) return;
-
-            servicio.eliminarRepuesto(id);
-            log("[OK] Repuesto eliminado: ID " + id);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(frame, "Error: " + ex.getMessage());
-        }
-    }
-
-    // -----------------------------
-    // ORDEN + DETALLES + SEGUIMIENTO
-    // -----------------------------
-    private void crearOrdenGUI() {
-        try {
-            Integer idCli = pedirEnteroPositivo("ID Cliente:");
-            if (idCli == null) return;
-
-            Integer idBici = pedirEnteroPositivo("ID Bicicleta:");
-            if (idBici == null) return;
-
-            String desc = pedirTexto("Descripción del servicio:");
-            if (desc == null) return;
-
-            Double mano = pedirDoubleNoNegativo("Mano de obra (valor):");
-            if (mano == null) return;
-
-            OrdenServicio o = servicio.crearOrden(idCli, idBici, desc, mano);
-            log("[OK] Orden creada: " + o);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(frame, "Error: " + ex.getMessage());
-        }
-    }
-
-    private void agregarRepuestoOrdenGUI() {
-        try {
-            Integer idOrden = pedirEnteroPositivo("ID Orden:");
-            if (idOrden == null) return;
-
-            Integer idRep = pedirEnteroPositivo("ID Repuesto:");
-            if (idRep == null) return;
-
-            Integer cant = pedirEnteroPositivo("Cantidad:");
-            if (cant == null) return;
-
-            servicio.agregarRepuestoAOrden(idOrden, idRep, cant);
-            log("[OK] Repuesto agregado a orden. Orden=" + idOrden + ", Repuesto=" + idRep + ", Cant=" + cant);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(frame, "Error: " + ex.getMessage());
-        }
-    }
-
-    private void eliminarRepuestoOrdenGUI() {
-        try {
-            Integer idOrden = pedirEnteroPositivo("ID Orden:");
-            if (idOrden == null) return;
-
-            Integer idRep = pedirEnteroPositivo("ID Repuesto a quitar:");
-            if (idRep == null) return;
-
-            servicio.eliminarRepuestoDeOrden(idOrden, idRep);
-            log("[OK] Repuesto eliminado de orden. Orden=" + idOrden + ", Repuesto=" + idRep);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(frame, "Error: " + ex.getMessage());
-        }
-    }
-
-    private void modificarCantidadOrdenGUI() {
-        try {
-            Integer idOrden = pedirEnteroPositivo("ID Orden:");
-            if (idOrden == null) return;
-
-            Integer idRep = pedirEnteroPositivo("ID Repuesto:");
-            if (idRep == null) return;
-
-            Integer nueva = pedirEnteroPositivo("Nueva cantidad:");
-            if (nueva == null) return;
-
-            servicio.modificarCantidadRepuestoOrden(idOrden, idRep, nueva);
-            log("[OK] Cantidad modificada. Orden=" + idOrden + ", Repuesto=" + idRep + ", Nueva=" + nueva);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(frame, "Error: " + ex.getMessage());
-        }
-    }
-
-    private void seguimientoOrdenGUI() {
-        try {
-            Integer idOrden = pedirEnteroPositivo("ID Orden:");
-            if (idOrden == null) return;
-
-            String[] opciones = {"Agregar Nota", "Cambiar Estado"};
-            int op = JOptionPane.showOptionDialog(frame, "¿Qué quieres hacer?",
-                    "Seguimiento", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE,
-                    null, opciones, opciones[0]);
-
-            if (op == 0) {
-                String nota = pedirTexto("Escribe la nota de seguimiento:");
-                if (nota == null) return;
-                servicio.agregarNotaSeguimiento(idOrden, nota);
-                log("[OK] Nota agregada a orden " + idOrden);
-            } else if (op == 1) {
-                EstadoOrden estado = (EstadoOrden) JOptionPane.showInputDialog(
-                        frame,
-                        "Selecciona estado:",
-                        "Estado",
-                        JOptionPane.QUESTION_MESSAGE,
-                        null,
-                        EstadoOrden.values(),
-                        EstadoOrden.EN_PROCESO
-                );
-                if (estado == null) return;
-                servicio.cambiarEstadoOrden(idOrden, estado);
-                log("[OK] Estado actualizado en orden " + idOrden + " -> " + estado);
+            input = input.trim();
+            if (!input.matches("\\d{10}")) {
+                JOptionPane.showMessageDialog(parent,
+                        "Cédula inválida.\nDebe tener EXACTAMENTE 10 dígitos y solo números.\nIntenta de nuevo.",
+                        "Validación", JOptionPane.WARNING_MESSAGE);
+                continue;
             }
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(frame, "Error: " + ex.getMessage());
+            return input;
         }
     }
 
-    private void cerrarOrdenGUI() {
-        try {
-            Integer idOrden = pedirEnteroPositivo("ID Orden a cerrar:");
-            if (idOrden == null) return;
+    private static String pedirTextoNoVacio(Component parent, String mensaje) {
+        while (true) {
+            String input = JOptionPane.showInputDialog(parent, mensaje);
+            if (input == null) return null;
 
-            servicio.cerrarOrden(idOrden);
-            log("[OK] Orden cerrada: " + idOrden);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(frame, "Error: " + ex.getMessage());
+            input = input.trim();
+            if (input.isEmpty()) {
+                JOptionPane.showMessageDialog(parent,
+                        "No puede estar vacío. Intenta de nuevo.",
+                        "Validación", JOptionPane.WARNING_MESSAGE);
+                continue;
+            }
+            return input;
         }
     }
 
-    private void reporteOrdenGUI() {
-        Integer idOrden = pedirEnteroPositivo("ID Orden para reporte:");
-        if (idOrden == null) return;
+    private static double pedirDoubleNoNeg(Component parent, String mensaje) {
+        while (true) {
+            String input = JOptionPane.showInputDialog(parent, mensaje);
+            if (input == null) return Double.NaN;
 
-        String rep = ReporteServicio.reporteOrden(servicio, idOrden);
-        JTextArea t = new JTextArea(rep, 22, 60);
-        t.setFont(new Font("Consolas", Font.PLAIN, 12));
-        t.setEditable(false);
-        JOptionPane.showMessageDialog(frame, new JScrollPane(t), "Reporte Orden " + idOrden, JOptionPane.INFORMATION_MESSAGE);
-        log("[INFO] Reporte generado para orden " + idOrden);
+            input = input.trim().replace(",", ".");
+            try {
+                double val = Double.parseDouble(input);
+                if (val < 0) {
+                    JOptionPane.showMessageDialog(parent,
+                            "No se permiten números negativos. Intenta de nuevo.",
+                            "Validación", JOptionPane.WARNING_MESSAGE);
+                    continue;
+                }
+                return val;
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(parent,
+                        "Número inválido. Intenta de nuevo.",
+                        "Validación", JOptionPane.WARNING_MESSAGE);
+            }
+        }
+    }
+
+    private static int pedirIntNoNeg(Component parent, String mensaje) {
+        while (true) {
+            String input = JOptionPane.showInputDialog(parent, mensaje);
+            if (input == null) return Integer.MIN_VALUE;
+
+            input = input.trim();
+            try {
+                int val = Integer.parseInt(input);
+                if (val < 0) {
+                    JOptionPane.showMessageDialog(parent,
+                            "No se permiten números negativos. Intenta de nuevo.",
+                            "Validación", JOptionPane.WARNING_MESSAGE);
+                    continue;
+                }
+                return val;
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(parent,
+                        "Número inválido. Intenta de nuevo.",
+                        "Validación", JOptionPane.WARNING_MESSAGE);
+            }
+        }
+    }
+
+    private static int pedirIntPositivo(Component parent, String mensaje) {
+        while (true) {
+            String input = JOptionPane.showInputDialog(parent, mensaje);
+            if (input == null) return Integer.MIN_VALUE;
+
+            input = input.trim();
+            try {
+                int val = Integer.parseInt(input);
+                if (val <= 0) {
+                    JOptionPane.showMessageDialog(parent,
+                            "Debe ser un número MAYOR que 0. Intenta de nuevo.",
+                            "Validación", JOptionPane.WARNING_MESSAGE);
+                    continue;
+                }
+                return val;
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(parent,
+                        "Número inválido. Intenta de nuevo.",
+                        "Validación", JOptionPane.WARNING_MESSAGE);
+            }
+        }
     }
 }
